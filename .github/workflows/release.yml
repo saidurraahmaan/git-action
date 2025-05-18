@@ -1,4 +1,4 @@
-name: Go Release Build
+name: Build Release Binaries
 
 on:
   release:
@@ -6,30 +6,34 @@ on:
 
 jobs:
   build:
-    name: Build for Windows and Linux
+    name: Build Binaries
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write 
+
     steps:
-      - name: Checkout latest main branch
-        uses: actions/checkout@v1
-        with:
-          ref: main 
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.21'
 
-      - name: Build for Linux
+      - name: Build Linux binary
         run: |
-          GOOS=linux GOARCH=amd64 go build -o build/myapp-linux main.go
+          GOOS=linux GOARCH=amd64 go build -o myapp-linux-amd64 ./main.go
 
-      - name: Build for Windows
+      - name: Build Windows binary
         run: |
-          GOOS=windows GOARCH=amd64 go build -o build/myapp-windows.exe main.go
+          GOOS=windows GOARCH=amd64 go build -o myapp-windows-amd64.exe ./main.go
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v1
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
         with:
-          name: go-binaries
-          path: build/
+          files: |
+            myapp-linux-amd64
+            myapp-windows-amd64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
